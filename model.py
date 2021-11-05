@@ -8,7 +8,7 @@ import torch.nn.functional as F
 # %%
 LSTM_HIDDEN_UNITS = 128
 NUM_OF_LSTM_HIDDEN_LAYERS = 1
-NUM_OF_LINEAR_CELLS = 512
+NUM_OF_LINEAR_CELLS = 256
 NUM_OF_TAEGET_PC = 256
 STANDARD_DEVIATION_PC = 0.01
 NUM_OF_TAEGET_HDC = 12
@@ -44,6 +44,7 @@ class RatTrajectoryModel(nn.Module):
         self.Whp = nn.Linear(NUM_OF_TAEGET_PC, LSTM_HIDDEN_UNITS, bias=False)
         self.Whd = nn.Linear(NUM_OF_TAEGET_HDC, LSTM_HIDDEN_UNITS, bias=False)
 
+        # self.bn_pc = torch.nn.BatchNorm1d()
     def forward(self, x, x0):
         """
         x.shape: [N, L, H]
@@ -58,17 +59,17 @@ class RatTrajectoryModel(nn.Module):
         h0 = x0[1]
         l0 = self.Wcp(c0) + self.Wcd(h0)  # 线性映射到lstm的cell state初始化 [batch size, hidden size]
         m0 = self.Whp(c0) + self.Whd(h0)  # 线性映射到lstm的hidden layer初始化 [batch size, hidden size]
-        l0 = l0[None, ::]
-        m0 = m0[None, ::]
-        h, _ = self.recurrent_layer(x, (m0, l0))  # input [batch size, seq len, input size] h [batch size, seq len, hidden size]
+        m0 = m0.permute(1,0,2)
+        l0 = l0.permute(1,0,2)
+        h, _ = self.recurrent_layer(x, (m0, l0))  # input [batch size, seq len, input size] h [D∗num_layers, batch size, hidden size]
         g = self.dropout(self.linear_layer(h))
-        pre_pc = F.softmax(self.output_layer_pc(g), dim=-1)
-        pre_hdc = F.softmax(self.output_layer_hdc(g), dim=-1)
-        return pre_pc, pre_hdc
+        pre_pc = self.output_layer_pc(g)
+        pre_hdc = self.output_layer_hdc(g)
+        return F.softmax(pre_pc, dim=-1), F.softmax(pre_hdc, dim=-1)
 
 #%%
 if __name__ == '__main__':
     model = RatTrajectoryModel(22, 120)
-    x0 = (torch.randn(3, NUM_OF_TAEGET_PC), torch.randn(3, NUM_OF_TAEGET_HDC))
+    x0 = (torch.randn(3,1, NUM_OF_TAEGET_PC), torch.randn(3,1, NUM_OF_TAEGET_HDC))
     x = torch.randn(3, 120, 22)
     pre = model(x, x0)
