@@ -10,4 +10,4 @@ V9: 使用adam优化器，batch size = 24
 V10: linear cell num = 529, dropout = 0.5
 V11: 添加noise variance=0.01 linear cell num=512
 V12: dataset全集， epoch=3000
-V13: epoch=50 linear没有bias 加噪声 linear加正则 linear num=256 batch size=10
+V13: epoch=50 linear没有bias linear output加正则 linear num=256 batch size=10

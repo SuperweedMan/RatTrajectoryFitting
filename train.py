@@ -1,4 +1,4 @@
-#%%
+# %%
 import enum
 import matplotlib.pyplot as plt
 import torch
@@ -16,10 +16,11 @@ import numpy as np
 from tqdm import tqdm
 from xy_cell import Cells2XYs
 import random
-#%%
+# %%
 # ds = Trajectory(Path(Config.data_root_path))[:10000]
 ds = Trajectory(Path(Config.data_root_path))
-dl = DataLoader(ds, batch_size=Config.batch_size, shuffle=True, collate_fn=np_collate_fn)
+dl = DataLoader(ds, batch_size=Config.batch_size,
+                shuffle=True, collate_fn=np_collate_fn)
 PCTrans = PlaceCellEnsemble(n_cells=Config.n_place_cells)
 HCTrans = HeadCellEnsemble(n_cells=Config.n_head_cells)
 
@@ -30,7 +31,14 @@ model = RatTrajectoryModel(Config.model_input_size, Config.seq_len)
 criterion = Criterial()
 
 # optimizer = torch.optim.RMSprop(model.parameters(), lr=Config.learning_rate)
-optimizer = torch.optim.Adam(model.parameters(), lr=Config.learning_rate)
+weight_decay_para_keys = ['linear_layer.weight',
+                          'output_layer_pc.weight', 'output_layer_hdc.weight']
+weight_decay_list = (param for name, param in model.named_parameters() if name in weight_decay_para_keys)
+no_decay_list = (param for name, param in model.named_parameters() if name not in weight_decay_para_keys)
+
+optimizer = torch.optim.Adam(({'params': no_decay_list},
+                              {'params': weight_decay_list, 'weight_decay': Config.weight_decay}),
+                             lr=Config.learning_rate)
 
 start_epoch = -1
 # losses = np.array([]).astype(np.float32)
@@ -56,7 +64,7 @@ if Config.is_resume:
 
 model = model.to(device)
 
-#%%
+# %%
 for epoch in tqdm(range(start_epoch+1, Config.epochs), desc='epoch: '):
     model.train()
     for idx, d in tqdm(enumerate(dl), desc='batch: '):
@@ -65,9 +73,10 @@ for epoch in tqdm(range(start_epoch+1, Config.epochs), desc='epoch: '):
         d['init_pos'] = PCTrans(d['init_pos'][:, np.newaxis, :])
         d['init_hd'] = HCTrans(d['init_hd'][:, np.newaxis, :])
         d = {k: torch.from_numpy(v).to(torch.float32) for k, v in d.items()}
-        d = {k:v.to(device) for k, v in d.items()}
+        d = {k: v.to(device) for k, v in d.items()}
         if Config.add_noise:
-            d['ego_vel'] = d['ego_vel'] + Config.noise_variance*torch.randn(*d['ego_vel'].shape).to(device)
+            d['ego_vel'] = d['ego_vel'] + Config.noise_variance * \
+                torch.randn(*d['ego_vel'].shape).to(device)
         output = model(d['ego_vel'], (d['init_pos'], d['init_hd']))
         loss = criterion(*output, d['target_pos'], d['target_hd'])
         # loss2 = criterion(d['target_pos'], d['target_hd'], d['target_pos'], d['target_hd'])
@@ -75,7 +84,8 @@ for epoch in tqdm(range(start_epoch+1, Config.epochs), desc='epoch: '):
         optimizer.zero_grad()
         loss.backward()
 
-        torch.nn.utils.clip_grad_norm_(model.parameters(), Config.clipping_max_norm, Config.clipping_norm_type)
+        torch.nn.utils.clip_grad_norm_(
+            model.parameters(), Config.clipping_max_norm, Config.clipping_norm_type)
 
         optimizer.step()
         # 输出loss
