@@ -1,1 +1,4 @@
-__pycache__
+/__pycache__
+/checkpoint_v*/
+!/checkpoint_v6/ckpt_epoch_99
+!/checkpoint_v8/ckpt_epoch_753

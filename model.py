@@ -4,11 +4,15 @@ import torch.nn as nn
 import numpy as np
 import torch.nn.functional as F
 
+from config import Config
+
 
 # %%
 LSTM_HIDDEN_UNITS = 128
 NUM_OF_LSTM_HIDDEN_LAYERS = 1
-NUM_OF_LINEAR_CELLS = 256
+# NUM_OF_LINEAR_CELLS = 256
+# NUM_OF_LINEAR_CELLS = 512
+NUM_OF_LINEAR_CELLS = Config.num_of_linear_cell
 NUM_OF_TAEGET_PC = 256
 STANDARD_DEVIATION_PC = 0.01
 NUM_OF_TAEGET_HDC = 12
@@ -34,7 +38,7 @@ class RatTrajectoryModel(nn.Module):
             input_size=input_size, hidden_size=LSTM_HIDDEN_UNITS,
             num_layers=NUM_OF_LSTM_HIDDEN_LAYERS, batch_first=True)
         self.linear_layer = nn.Linear(LSTM_HIDDEN_UNITS, NUM_OF_LINEAR_CELLS)
-        self.dropout = nn.Dropout(p=0.5)
+        self.dropout = nn.Dropout(p=Config.dropout_rate)
         self.output_layer_pc = nn.Linear(NUM_OF_LINEAR_CELLS, NUM_OF_TAEGET_PC)
         self.output_layer_hdc = nn.Linear(
             NUM_OF_LINEAR_CELLS, NUM_OF_TAEGET_HDC)
