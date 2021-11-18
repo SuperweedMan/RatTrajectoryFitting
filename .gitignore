@@ -1,4 +1,7 @@
 /__pycache__
-/checkpoint_v*/
+/checkpoint_v*/*
 !/checkpoint_v6/ckpt_epoch_99
 !/checkpoint_v8/ckpt_epoch_753
+!/checkpoint_v12/ckpt_epoch_42
+/fitting_path/
+/heapmap/
