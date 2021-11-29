@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import torch
 
 #%%
-states = torch.load('./checkpoint_v12/ckpt_epoch_39')
+states = torch.load('./checkpoint_v16/ckpt_epoch_21')
 # states = torch.load('./checkpoint_v9/ckpt_epoch_1998')
 #%%
 losses = states['losses']

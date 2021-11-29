@@ -59,6 +59,13 @@ def GridCell_forward_fn(integrator: Integration):
             output.reshape(-1, cell_num).detach().clone().cpu().numpy())
     return _fn
 
+def GridCell_pre_forward_fn(integrator: Integration):
+    def _fn(module, input):
+        input = input[0]
+        bs, seq, cell_num = input.shape
+        integrator.update_activate_value(
+            input.reshape(-1, cell_num).detach().clone().cpu().numpy())
+    return _fn
 
 # %%
 if __name__ == '__main__':
@@ -78,14 +85,16 @@ if __name__ == '__main__':
     import numpy  as np
     from config import Config
     from tqdm import tqdm
-    checkpoint = torch.load('./checkpoint_v12/ckpt_epoch_39')
+    checkpoint = torch.load('./checkpoint_v15/ckpt_epoch_42')
     model.load_state_dict(checkpoint['model'])
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     model.to(device)
 
     # fig, ax = plt.subplots(Config.num_of_linear_cell)
     integration = Integration(-1.1, 1.1, 0.2, Config.num_of_linear_cell)
-    handle = model.linear_layer.register_forward_hook(GridCell_forward_fn(integration))
+    # integration = Integration(-1.1, 1.1, 0.2, 128)
+    handle = model.dropout.register_forward_hook(GridCell_forward_fn(integration))
+    # handle = model.linear_layer.register_forward_pre_hook(GridCell_pre_forward_fn(integration))
     # for d in dl:
     for d in tqdm(dl, desc='batch: '):
         # d['target_pos'] = PCTrans(d['target_pos'])
@@ -101,35 +110,41 @@ if __name__ == '__main__':
     handle.remove()
 #%%    
 if __name__ == '__main__':
-    imgs = max_min_scale(integration.grid_map)
-    fig, ax = plt.subplots(9,9, sharex=True, sharey=True)
+    # imgs = max_min_scale(integration.grid_map)
+    imgs = integration.grid_map
+    fig, ax = plt.subplots(16,16, sharex=True, sharey=True)
     ax = ax.flatten()
-    # for i in range(Config.num_of_linear_cell):
-    for i in range(81):
+    # for i in range(128):
+    for i in range(Config.num_of_linear_cell):
         ax[i].imshow(imgs[...,i])
     plt.show()
 #%%
 if __name__ == '__main__':
-    import numpy  as np
-    def Guass(x: np.ndarray, sigma: float, mu: np.ndarray):
-        norm = np.linalg.norm((x-mu), axis=-1, keepdims=True)
-        norm2 = np.square(norm)
-        return np.exp(-norm2 / (2*sigma*sigma))
-
-    fig, ax = plt.subplots(3)
-    x = np.arange(0,2,0.1).repeat((2-0)/0.1).reshape(-1,int((2-0)/0.1))
-    xt = x.T
-    x = np.concatenate((x[...,np.newaxis],xt[...,np.newaxis]), axis=-1)
-    img = Guass(x, sigma=1., mu=1.)
-    ax[0].imshow(img)
-    
-    x = np.random.rand(10000,2) * 2
-    integration = Integration(2., 0., 0.1, 2)
-    v = Guass(x, sigma=1., mu=1.)
-    v2 = Guass(x, sigma=1., mu=0.)
-    integration.update_activate_value(np.concatenate((v, v2),axis=-1))
-    integration.update_target_position(x)
-    ax[1].imshow(integration.grid_map[...,0])
-    ax[2].imshow(integration.grid_map[...,1])
+    fig, ax = plt.subplots(1, sharex=True, sharey=True)
+    ax.imshow(integration.grid_map[...,139])
     plt.show()
+#%%
+# if __name__ == '__main__':
+#     import numpy  as np
+#     def Guass(x: np.ndarray, sigma: float, mu: np.ndarray):
+#         norm = np.linalg.norm((x-mu), axis=-1, keepdims=True)
+#         norm2 = np.square(norm)
+#         return np.exp(-norm2 / (2*sigma*sigma))
+
+#     fig, ax = plt.subplots(3)
+#     x = np.arange(0,2,0.1).repeat((2-0)/0.1).reshape(-1,int((2-0)/0.1))
+#     xt = x.T
+#     x = np.concatenate((x[...,np.newaxis],xt[...,np.newaxis]), axis=-1)
+#     img = Guass(x, sigma=1., mu=1.)
+#     ax[0].imshow(img)
+    
+#     x = np.random.rand(10000,2) * 2
+#     integration = Integration(2., 0., 0.1, 2)
+#     v = Guass(x, sigma=1., mu=1.)
+#     v2 = Guass(x, sigma=1., mu=0.)
+#     integration.update_activate_value(np.concatenate((v, v2),axis=-1))
+#     integration.update_target_position(x)
+#     ax[1].imshow(integration.grid_map[...,0])
+#     ax[2].imshow(integration.grid_map[...,1])
+#     plt.show()
 

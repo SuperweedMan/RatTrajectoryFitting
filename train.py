@@ -30,14 +30,18 @@ model = RatTrajectoryModel(Config.model_input_size, Config.seq_len)
 
 criterion = Criterial()
 
-# optimizer = torch.optim.RMSprop(model.parameters(), lr=Config.learning_rate)
 weight_decay_para_keys = ['linear_layer.weight',
                           'output_layer_pc.weight', 'output_layer_hdc.weight']
 weight_decay_list = (param for name, param in model.named_parameters() if name in weight_decay_para_keys)
 no_decay_list = (param for name, param in model.named_parameters() if name not in weight_decay_para_keys)
 
+# optimizer = torch.optim.RMSprop(model.parameters(), lr=Config.learning_rate)
+# optimizer = torch.optim.Adam(({'params': no_decay_list},
+#                               {'params': weight_decay_list, 'weight_decay': Config.weight_decay}),
+#                              lr=Config.learning_rate)
+
 optimizer = torch.optim.Adam(({'params': no_decay_list},
-                              {'params': weight_decay_list, 'weight_decay': Config.weight_decay}),
+                              {'params': weight_decay_list}),
                              lr=Config.learning_rate)
 
 start_epoch = -1
@@ -85,7 +89,9 @@ for epoch in tqdm(range(start_epoch+1, Config.epochs), desc='epoch: '):
         loss.backward()
 
         torch.nn.utils.clip_grad_norm_(
-            model.parameters(), Config.clipping_max_norm, Config.clipping_norm_type)
+             model.parameters(), Config.clipping_max_norm, Config.clipping_norm_type)
+
+        #torch.nn.utils.clip_grad_norm_(model.parameters(), Config.training_clipping)
 
         optimizer.step()
         # 输出loss

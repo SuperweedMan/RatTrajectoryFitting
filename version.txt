@@ -11,3 +11,10 @@ V10: linear cell num = 529, dropout = 0.5
 V11: 添加noise variance=0.01 linear cell num=512
 V12: dataset全集， epoch=3000
 V13: epoch=50 linear没有bias linear output加正则 linear num=256 batch size=10
+V14:    更改梯度剪裁的方式nn.utils.clip_grad_norm_(self.model.parameters(), value) 
+        更改优化器 optim.RMSprop(params=self.model.parameters(), lr=self.LEARNING_RATE, alpha=0.9, momentum=self.MOMENTUM, eps=1e-10)
+        # 使用 激发损失 也就是对lstm的激发也做L2正则
+        速度加70%的0，外加一些噪声0.04sigma
+V15: 更改优化器Adam
+V16: 去掉噪音，换回梯度剪裁方式，batch_size = 24, linear=512, dropout=0.5, dataset全集
+V17: 去掉正则，dropout=0.3

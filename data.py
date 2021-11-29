@@ -1,5 +1,6 @@
 # %%
 import pathlib
+from matplotlib.pyplot import axis
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -90,7 +91,7 @@ if __name__ == '__main__':
     from model import RatTrajectoryModel
     model = RatTrajectoryModel(3, Config.seq_len)
     ds = Trajectory(Path('../GridCellDataset/npy'))
-    dl = torch.utils.data.DataLoader(ds[:2], batch_size=3, collate_fn=np_collate_fn)
+    dl = torch.utils.data.DataLoader(ds, batch_size=1000, collate_fn=np_collate_fn)
     PCTrans = PlaceCellEnsemble(n_cells=Config.n_place_cells)
     HCTrans = HeadCellEnsemble(n_cells=Config.n_head_cells)
 #%%
@@ -105,3 +106,23 @@ if __name__ == '__main__':
         break
     # input = np.random.randn(3, 100, 1)
     # print(transformer(input))
+if __name__ == '__main__':
+    import numpy as np
+    from sincos2radian import sincos2radians
+    dl = torch.utils.data.DataLoader(ds, batch_size=1000, collate_fn=np_collate_fn)
+    for d in dl:
+        break
+    position  = d['target_pos'][0][:10]
+    velocity = d['ego_vel'][0][:10][...,0]
+    position_error = np.concatenate([d['init_pos'][0][None], position], axis=0) - np.concatenate([position, np.array([[0, 0]])], axis=0)
+    value = np.linalg.norm(position_error,axis=-1)
+
+    angle_v = d['target_hd'][0][:10]
+    
+    sincos_angle_v = sincos2radians(d['ego_vel'][0][:10][...,1:])
+# %%
+    angle_v_error = np.concatenate([np.array([[0]]), angle_v], axis=0) - np.concatenate([angle_v, np.array([[0]])], axis=0)
+#%%
+import math
+def angle2worldangle(a):
+    return -(a-(math.pi/2.))/math.pi *180.
