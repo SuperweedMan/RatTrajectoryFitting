@@ -41,8 +41,8 @@ class Cells2XYs:
             xyv = self.criterial(xycells, cell)
             idx = np.argmin(xyv.numpy())
             xyv = xyv.reshape(h,w, -1)
-            h_idx = int(idx / w) *0.01 + self.down_limit
-            w_idx = int(idx % w)*0.01 + self.down_limit
+            h_idx = int(idx / w) *self.interval + self.down_limit
+            w_idx = int(idx % w)*self.interval + self.down_limit
             l.append(xyv)
             d.append((h_idx, w_idx))
         return l, d

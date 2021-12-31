@@ -85,7 +85,7 @@ if __name__ == '__main__':
     import numpy  as np
     from config import Config
     from tqdm import tqdm
-    checkpoint = torch.load('./checkpoint_v15/ckpt_epoch_42')
+    checkpoint = torch.load('./checkpoint_v17/ckpt_epoch_69')
     model.load_state_dict(checkpoint['model'])
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     model.to(device)
@@ -112,7 +112,7 @@ if __name__ == '__main__':
 if __name__ == '__main__':
     # imgs = max_min_scale(integration.grid_map)
     imgs = integration.grid_map
-    fig, ax = plt.subplots(16,16, sharex=True, sharey=True)
+    fig, ax = plt.subplots(23,23, sharex=True, sharey=True)
     ax = ax.flatten()
     # for i in range(128):
     for i in range(Config.num_of_linear_cell):
@@ -148,3 +148,4 @@ if __name__ == '__main__':
 #     ax[2].imshow(integration.grid_map[...,1])
 #     plt.show()
 
+np.save(r'C:\Users\wyz\OneDrive - hqu.edu.cn\大论文\数据收集\小鼠路径积分\grid_cells\grid_cells.npy', integration.grid_map)

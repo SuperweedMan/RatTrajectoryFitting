@@ -2,7 +2,6 @@
 import enum
 import matplotlib.pyplot as plt
 import torch
-from torch._C import device
 from torch.utils.data import DataLoader
 from pathlib import Path
 from config import Config

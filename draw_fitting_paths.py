@@ -26,9 +26,9 @@ if __name__ == '__main__':
     PCTrans = PlaceCellEnsemble(n_cells=Config.n_place_cells)
     HCTrans = HeadCellEnsemble(n_cells=Config.n_head_cells)
 
-    ckp_version = 12
-    ckp_epochs= 39
-    ckp_path = './checkpoint_v12/ckpt_epoch_39'
+    ckp_version = 17
+    ckp_epochs= 69
+    ckp_path = './checkpoint_v17/ckpt_epoch_69'
     ckp = torch.load(Path(ckp_path))
     model.load_state_dict(ckp['model'])
 
@@ -56,3 +56,8 @@ if __name__ == '__main__':
         target = x['target_pos'][0].detach().clone().cpu().numpy()
         ax.plot(target[:, 0], target[:,1], alpha=0.5, color='red')
         plt.savefig(Path('./fitting_path')/ Path('v{}_epoch{}_tra{}'.format(ckp_version, ckp_epochs, idx))) 
+
+        saved_data = {}
+        saved_data['predic_xys'] = xys
+        saved_data['target_xys'] = target
+        np.save(Path('./fitting_path')/ Path('v{}_epoch{}_tra{}.npy'.format(ckp_version, ckp_epochs, idx)), saved_data)

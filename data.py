@@ -97,15 +97,16 @@ if __name__ == '__main__':
 #%%
 if __name__ == '__main__':
     for d in dl:
+        break
         d['target_pos'] = PCTrans(d['target_pos'])
         d['target_hd'] = HCTrans(d['target_hd'])
         d['init_pos'] = PCTrans(d['init_pos'][:, np.newaxis, :])
         d['init_hd'] = HCTrans(d['init_hd'][:, np.newaxis, :])
         d = {k: torch.from_numpy(v).to(torch.float32) for k, v in d.items()}
-        output = model(d['ego_vel'], (d['init_pos'], d['init_hd']))
-        break
+        # output = model(d['ego_vel'], (d['init_pos'], d['init_hd']))
     # input = np.random.randn(3, 100, 1)
     # print(transformer(input))
+#%%
 if __name__ == '__main__':
     import numpy as np
     from sincos2radian import sincos2radians
